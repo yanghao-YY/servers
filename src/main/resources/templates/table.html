@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器列表详情</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.2/dist/bootstrap-table.min.css">
+<script src="https://unpkg.com/bootstrap-table@1.15.2/dist/bootstrap-table.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.15.2/dist/locale/bootstrap-table-zh-CN.min.js"></script><script src="https://unpkg.com/bootstrap-table@1.15.2/dist/bootstrap-table.min.js"></script>
+</head>
+<body>
+<div>
+    <form class="form-inline" role="form" action="/query" method="post">
+        <div class="form-group" style="text-align: left">
+            <label  class="col-sm-5 control-label" >服务器ip:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="ip" placeholder="请输入服务器ip">
+            </div>
+        </div>
+        <div class="form-group">
+            <label  class="col-sm-5 control-label">应用名:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="servername" placeholder="请输入应用名">
+            </div>
+        </div>
+        <div class="form-group">
+            <label  class="col-sm-5 control-label">端口号:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="port" placeholder="请输入端口号">
+            </div>
+        </div>
+        <div class="form-group">
+            <label  class="col-sm-5 control-label">备注:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="remark" placeholder="请输入备注">
+            </div>
+        </div>
+        <div class="col-sm-10">
+            <input type="hidden" class="form-control" name="page" value="1">
+        </div>
+        <div class="col-sm-10">
+            <input type="hidden" class="form-control" name="pagesize" value="10">
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10">
+                <input class="btn btn-default" type="submit" value="查询">
+            </div>
+        </div>
+
+    </form></div>
+<div>
+<table
+        id="table"
+        data-locale="zh-CN"
+        data-height="460"
+        data-toolbar=".toolbar"
+        data-search="false"
+        data-show-refresh="true"
+        data-show-toggle="true"
+        data-show-columns="true"
+        data-show-export="false"
+        data-pagination="true"
+        data-method="post"
+        data-page-size="5"
+        data-page-list="[10, 25, 50, 100]">
+    <thead>
+    <tr>
+        <th>id</th>
+        <th>服务器ip</th>
+        <th>应用名</th>
+        <th>端口号</th>
+        <th>备注</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="server : ${servers}">
+        <td th:text="${server.id}">1</td>
+        <td th:text="${server.ip}">127.0.0.1</td>
+        <td th:text="${server.servername}">test.dmall.com</td>
+        <td th:text="${server.port}">8080</td>
+        <td th:text="${server.remark}">test</td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    var $table = $('#table')
+
+    $(function() {
+        $table.bootstrapTable()
+
+        $('#locale').change(function () {
+            $table.bootstrapTable('refreshOptions', {
+                locale: $(this).val()
+            })
+        })
+    })
+</script>
+</div>
+</body>
+</html>

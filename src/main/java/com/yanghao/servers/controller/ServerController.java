@@ -1,16 +1,14 @@
 package com.yanghao.servers.controller;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yanghao.servers.entity.Server;
 import com.yanghao.servers.service.ServerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,15 +38,17 @@ public class ServerController {
         }
 
     }
-    @PostMapping("/query")
-    public String query(@RequestParam("servername")String servername,@RequestParam("ip")String ip,@RequestParam("port")String port,@RequestParam("remark")String remark,@RequestParam("page")int page,@RequestParam("pagesize")int pagesize,ModelMap modelMap){
+    @GetMapping("/query")
+    public String query(@RequestParam("servername")String servername,@RequestParam("ip")String ip,@RequestParam("port")String port,@RequestParam("remark")String remark,@RequestParam(value = "pagenum" ,defaultValue = "1")int pagenum,@RequestParam(value = "pagesize",defaultValue = "3")int pagesize,ModelMap modelMap){
         try {
-//            page=1;
-//            pagesize=3;
-            PageHelper.startPage(page,pagesize);
+
+            PageHelper.startPage(pagenum,pagesize);
             List<Server> serverList = serverService.query(servername,ip,port,remark);
+            PageInfo<Server> pageInfo = new PageInfo<>(serverList);
             modelMap.addAttribute("servers",serverList);
-            return  "index";
+            modelMap.addAttribute("pageInfo",pageInfo);
+           return  "index";
+//            return  serverList;
 
         } catch (Exception e) {
             e.printStackTrace();

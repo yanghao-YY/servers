@@ -2,6 +2,7 @@ package com.yanghao.servers.mapper;
 
 
 
+import com.alibaba.druid.sql.visitor.functions.Concat;
 import com.github.pagehelper.PageHelper;
 import com.yanghao.servers.entity.Server;
 import org.apache.ibatis.annotations.*;
@@ -24,18 +25,21 @@ public interface ServerMapper {
     class ServerSqlProvider implements ProviderMethodResolver {
         public static String query(final @Param("servername")String servername,final  @Param("ip")String ip,final  @Param("port")String port, final @Param("remark")String remark){
           SQL sql = new SQL().SELECT("*").FROM("servers");
+
           if(!servername.equals("")){
-              sql.WHERE("servername like #{servername}");
+              sql.WHERE("servername like  concat('%',#{servername},'%')");
           }
-          if(!ip.equals("")){
-              sql.WHERE("ip like #{ip}");
-          if( !port.equals("")){
-              sql.WHERE("port like #{port}");
+          if(!ip.equals("")) {
+              sql.WHERE("ip like concat('%',#{ip},'%')");
+          }
+          if(!port.equals("")){
+
+              sql.WHERE("port like concat('%',#{port},'%')");
           }
           if(!remark.equals("")){
-              sql.WHERE("remark like #{remark}");
+              sql.WHERE("remark like concat('%',#{remark},'%')");
           }
-          }
+
            return sql.toString();
 
         }
