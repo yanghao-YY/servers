@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>服务器列表详情</title>
@@ -15,7 +15,7 @@
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="https://cdn.bootcss.com/jquery.form/4.2.1/jquery.form.min.js"></script>
 <div>
-    <form class="form-inline" role="form"  action="/query" method="get" id="query_form">
+    <form class="form-inline" role="form"  action="/getservers" method="get" id="query_form">
     <div class="form-group" style="text-align: left">
         <label  class="col-sm-5 control-label" >服务器ip:</label>
         <div class="col-sm-10">
@@ -41,7 +41,13 @@
         </div>
     </div>
         <!--<div class="col-sm-10">-->
-            <!--<input type="hidden" class="form-control" name="pagenum" value="1">-->
+            <input type="hidden" class="form-control" name="pagenum"  id="input_pagenum">
+        <script type="text/javascript">
+
+            $("#"+pageObj[j]).on('click',function(){
+                alert("Hello World on");
+            });
+        </script>
         <!--</div>-->
         <!--<div class="col-sm-10">-->
             <!--<input type="hidden" class="form-control" name="pagesize" value="3">-->
@@ -54,7 +60,7 @@
 
     </form></div>
 <div>
-    <table class="table table-hover" >
+    <table class="table table-hover">
                <thead>
         <tr>
             <th>id</th>
@@ -64,49 +70,47 @@
             <th>备注</th>
         </tr>
         </thead>
-        <tbody id="result">
-
-        <tr th:each="server : ${servers}">
-            <td th:text="${server.id}">1</td>
-            <td th:text="${server.ip}">127.0.0.1</td>
-            <td th:text="${server.servername}">test.dmall.com</td>
-            <td th:text="${server.port}">8080</td>
-            <td th:text="${server.remark}">test</td>
-        </tr>
+        <tbody id="server_table">
         </tbody>
     </table>
 </div>
 <ul class="pagination pagination-lg" style="float: right">
     <li><a href="#">上一页</a></li>
-    <li th:each="page : ${pageInfo.getNavigatepageNums()}"><a href="#" th:text="${page}">1</a></li>
+    <li id="pagenums"></li>
     <li><a href="#">下一页</a></li>
 </ul>
 <script type="text/javascript">
     function query() {
+
         $.ajax({
             type: "GET",
-            dataType: "html",
+            dataType: "json",
             cache:false,
             url: "/getservers" ,
             data: $('#query_form').serialize(),
             success:function (data) {
-            var serverObj = eval(data);
-            $("#result").remove();
-            for(var i; i < serverObj.length ;i++){
-                var row = $("#result").clone();
-                    row.find("id").text(serverObj[i].id);
-                    row.find("ip").text(serverObj[i].ip);
-                    row.find("servername").text(serverObj[i].severname);
-                    row.find("port").text(serverObj[i].port);
-                    row.find("remark").text(serverObj[i].remark);
-                    row.appendTo("#result");
-
+                var resultObj = eval(data);
+                var serverObj = resultObj.server;
+                var pageObj = resultObj.pageNums;
+                console.log(serverObj);
+                $("#server_table").text("");
+                $("#pagenums").text("");
+                for (var i = 0; i < serverObj.length; i++) {
+                    var str = '<td>'+serverObj[i].id+'</td>'+'<td>'+serverObj[i].ip+'</td>'+'<td>'+serverObj[i].servername+'</td>'+'<td>'+serverObj[i].port+'</td>'+'<td>'+serverObj[i].remark+'</td>';
+                    $("#server_table").append('<tr>'+str+'</tr>')
                 }
-
-                         }
+                for(var j = 0; j < pageObj.length; j++){
+                     // $("#query_page").text(pageObj[j]);
+                    var str = '<a onclick="query()"  id="'+pageObj[j]+'" href="#">'+pageObj[j]+'</a>';
+                    $("#pagenums").append(str)
+                }
+            }
         })
 
     }
+    $("#"+pageObj[j]).on('click',function(){
+        alert("Hello World on");
+    });
 </script>
 </body>
 </html>
