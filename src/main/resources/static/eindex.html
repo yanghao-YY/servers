@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试环境应用列表详情</title>
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/demo/demo.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
+</head>
+<body>
+<div style="margin: 0 auto">
+<table id="dg" title="测试环境应用列表详情" class="easyui-datagrid" style="width:80%;height:auto;margin: 0 auto"
+       url="/getservers"
+       toolbar="#toolbar"
+       rownumbers="true" pagination="true" fitColumns="true" singleSelect="true">
+    <thead>
+    <tr>
+        <th field="id" width="50">id</th>
+        <th field="ip" width="50">服务器地址</th>
+        <th field="servername" width="50">应用名</th>
+        <th field="port" width="50">端口</th>
+        <th field="remark" width="50">备注</th>
+    </tr>
+    </thead>
+</table>
+</div>
+<div id="toolbar">
+    <div id="tb" style="padding:6px;display: inline-block" >
+        <span>服务器ip</span>
+        <input id="ip" style="line-height:26px;border:1px solid #ccc">
+        <span>应用名</span>
+        <input id="servername" style="line-height:26px;border:1px solid #ccc">
+        <span>端口</span>
+        <input id="port" style="line-height:26px;border:1px solid #ccc">
+        <span>备注</span>
+        <input id="remark" style="line-height:26px;border:1px solid #ccc">
+        <a href="#" id="btn" class="easyui-linkbutton" plain="true" onclick="doSearch()">查询</a>
+    </div>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新增</a>
+    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">编辑</a>-->
+    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>-->
+
+</div>
+<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">服务器详情</div>
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>服务器地址</label>
+            <input name="ip" class="easyui-validatebox" required="true">
+        </div>
+        <div class="fitem">
+            <label>应用名</label>
+            <input name="servername" class="easyui-validatebox" required="true">
+        </div>
+        <div class="fitem">
+            <label>端口</label>
+            <input name="port" class="easyui-validatebox" required="true">
+        </div>
+        <div class="fitem">
+            <label>备注</label>
+            <input name="remark" class="easyui-validatebox" required="false">
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveUser()">Save</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+</div>
+<script type="text/javascript">
+    $(function(){
+        doSearch()
+    });
+
+    $(function(){
+        var pager = $('#dg').datagrid('getPager');	// get the pager of datagrid
+        pager.pagination({
+            pageList: [10,50,100],
+            beforePageText: '第',//页数文本框前显示的汉字
+            afterPageText: '页 共 {pages} 页',
+            displayMsg:'当前显示 {from} - {to} 条记录 共 {total} 条记录',
+            columns:[[
+                {field:'action',title:'操作',width:80,align:'center',
+                    formatter:function(value,row,index){
+                        if (row.editing){
+                            var s = '<a href="javascript:void(0)" onclick="saverow(this)">保存</a> ';
+                            var c = '<a href="javascript:void(0)" onclick="cancelrow(this)">取消</a>';
+                            return s+c;
+                        } else {
+                            var e = '<a href="javascript:void(0)" onclick="editrow(this)">编辑</a> ';
+                            var d = '<a href="javascript:void(0)" onclick="deleterow(this)">删除</a>';
+                            return e+d;
+                        }
+                    }
+                }
+            ]],
+            onEndEdit:function(index,row){
+                var ed = $(this).datagrid('getEditor', {
+                    index: index,
+                    field: 'id'
+                });
+                row.productname = $(ed.target).combobox('getText');
+            },
+            onBeforeEdit:function(index,row){
+                row.editing = true;
+                $(this).datagrid('refreshRow', index);
+            },
+            onAfterEdit:function(index,row){
+                row.editing = false;
+                $(this).datagrid('refreshRow', index);
+            },
+            onCancelEdit:function(index,row){
+                row.editing = false;
+                $(this).datagrid('refreshRow', index);
+            }
+        });
+    });
+
+
+    function getRowIndex(target){
+        var tr = $(target).closest('tr.datagrid-row');
+        return parseInt(tr.attr('datagrid-row-index'));
+    }
+    function editrow(target){
+        $('#dg').datagrid('beginEdit', getRowIndex(target));
+    }
+    function deleterow(target){
+        $.messager.confirm('Confirm','Are you sure?',function(r){
+            if (r){
+                $('#dg').datagrid('deleteRow', getRowIndex(target));
+            }
+        });
+    }
+    function saverow(target){
+        $('#dg').datagrid('endEdit', getRowIndex(target));
+    }
+    function cancelrow(target){
+        $('#dg').datagrid('cancelEdit', getRowIndex(target));
+    }
+
+    var url;
+    function doSearch(){
+        $('#dg').datagrid('load',{
+            ip: $('#ip').val(),
+            servername: $('#servername').val(),
+            port: $('#port').val(),
+            remark: $('#remark').val()
+        });
+    }
+    function newUser(){
+        $('#dlg').dialog('open').dialog('setTitle','New User');
+        $('#fm').form('clear');
+        url = '/add';
+    }
+    function editUser(){
+        var row = $('#dg').datagrid('getSelected');
+        if (row){
+            $('#dlg').dialog('open').dialog('setTitle','Edit User');
+            $('#fm').form('load',row);
+            url = 'update_user.php?id='+row.id;
+        }
+    }
+    function saveUser(){
+        $('#fm').form('submit',{
+            url: '/add',
+            onSubmit: function(){
+                return $(this).form('validate');
+            },
+            success: function(result){
+                var result = eval('('+result+')');
+                if (result.errorMsg){
+                    $.messager.show({
+                        title: 'Error',
+                        msg: result.errorMsg
+                    });
+                } else {
+                    $('#dlg').dialog('close');		// close the dialog
+                    $('#dg').datagrid('reload');	// reload the user data
+                }
+            }
+        });
+    }
+    function destroyUser(){
+        var row = $('#dg').datagrid('getSelected');
+        if (row){
+            $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
+                if (r){
+                    $.post('destroy_user.php',{id:row.id},function(result){
+                        if (result.success){
+                            $('#dg').datagrid('reload');	// reload the user data
+                        } else {
+                            $.messager.show({	// show error message
+                                title: 'Error',
+                                msg: result.errorMsg
+                            });
+                        }
+                    },'json');
+                }
+            });
+        }
+    }
+</script>
+<style type="text/css">
+    #fm{
+        margin:0;
+        padding:10px 30px;
+    }
+    .ftitle{
+        font-size:14px;
+        font-weight:bold;
+        padding:5px 0;
+        margin-bottom:10px;
+        border-bottom:1px solid #ccc;
+    }
+    .fitem{
+        margin-bottom:5px;
+    }
+    .fitem label{
+        display:inline-block;
+        width:80px;
+    }
+    .fitem input{
+        width:160px;
+    }
+</style>
+
+</body>
+</html>

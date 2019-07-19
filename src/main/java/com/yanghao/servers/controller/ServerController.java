@@ -55,18 +55,18 @@ public class ServerController {
             return null;
         }
     }
-    @PostMapping("/add")
+    @PostMapping("/add1")
     public String add(@RequestParam("servername")String servername,@RequestParam("ip")String ip,@RequestParam("port")String port,@RequestParam("remark")String remark){
        serverService.insert(servername,ip,port,remark);
        System.out.println("111");
         return "新增成功！";
     }
-    @PostMapping("/update")
+    @PostMapping("/update1")
     public String update(@RequestParam("id")int id,@RequestParam("servername")String servername,@RequestParam("ip")String ip,@RequestParam("port")String port,@RequestParam("remark")String remark){
        serverService.update(id,servername,ip,port,remark);
         return "修改成功";
     }
-    @PostMapping("/delete")
+    @PostMapping("/delete1")
     public String delete(@RequestParam("id")int id){
         serverService.delete(id);
         return "删除成功";
