@@ -48,8 +48,15 @@ public class JsonController {
         return "修改成功";
     }
     @PostMapping("/delete")
-    public String delete(@RequestParam("id")int id){
-        serverService.delete(id);
-        return "删除成功";
+    public Result delete(@RequestParam("id")int id){
+        try {
+            serverService.delete(id);
+            return new Result("0000","success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result("9999","删除失败");
+
+        }
+
     }
 }

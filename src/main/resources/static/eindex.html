@@ -16,15 +16,7 @@
        url="/getservers"
        toolbar="#toolbar"
        rownumbers="true" pagination="true" fitColumns="true" singleSelect="true">
-    <thead>
-    <tr>
-        <th field="id" width="50">id</th>
-        <th field="ip" width="50">服务器地址</th>
-        <th field="servername" width="50">应用名</th>
-        <th field="port" width="50">端口</th>
-        <th field="remark" width="50">备注</th>
-    </tr>
-    </thead>
+
 </table>
 </div>
 <div id="toolbar">
@@ -39,9 +31,9 @@
         <input id="remark" style="line-height:26px;border:1px solid #ccc">
         <a href="#" id="btn" class="easyui-linkbutton" plain="true" onclick="doSearch()">查询</a>
     </div>
-    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新增</a>
-    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">编辑</a>-->
-    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>-->
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newServer()">新增</a>
+    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editServer()">编辑</a>-->
+    <!--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyServer()">删除</a>-->
 
 </div>
 <div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
@@ -67,22 +59,21 @@
     </form>
 </div>
 <div id="dlg-buttons">
-    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveUser()">Save</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveServer()">Save</a>
     <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
 </div>
 <script type="text/javascript">
     $(function(){
-        doSearch()
-    });
-
-    $(function(){
-        var pager = $('#dg').datagrid('getPager');	// get the pager of datagrid
-        pager.pagination({
-            pageList: [10,50,100],
-            beforePageText: '第',//页数文本框前显示的汉字
-            afterPageText: '页 共 {pages} 页',
-            displayMsg:'当前显示 {from} - {to} 条记录 共 {total} 条记录',
+        $('#dg').datagrid({
+            title:'测试环境服务器列表详情',
+            iconCls:'icon-edit',
+            idField:'id',
             columns:[[
+                {field:'id',title:'id',width:60},
+                {field:'ip',title:'服务器ip地址',width:100,align:'right',editor:'text'},
+                {field:'servername',title:'应用名',width:80,align:'right',editor:'text'},
+                {field:'port',title:'端口号',width:80,align:'right',editor:'text'},
+                {field:'remark',title:'备注',width:180,editor:'text'},
                 {field:'action',title:'操作',width:80,align:'center',
                     formatter:function(value,row,index){
                         if (row.editing){
@@ -97,12 +88,11 @@
                     }
                 }
             ]],
-            onEndEdit:function(index,row){
+            onEndEdit:function(index){
                 var ed = $(this).datagrid('getEditor', {
                     index: index,
                     field: 'id'
                 });
-                row.productname = $(ed.target).combobox('getText');
             },
             onBeforeEdit:function(index,row){
                 row.editing = true;
@@ -118,8 +108,6 @@
             }
         });
     });
-
-
     function getRowIndex(target){
         var tr = $(target).closest('tr.datagrid-row');
         return parseInt(tr.attr('datagrid-row-index'));
@@ -128,18 +116,38 @@
         $('#dg').datagrid('beginEdit', getRowIndex(target));
     }
     function deleterow(target){
-        $.messager.confirm('Confirm','Are you sure?',function(r){
+        var row = $('#dg').datagrid('getData').rows[$(target).rowIndex];
+        console.log(row);
+        $.messager.confirm('确认','确认要移除该应用的详情吗?',function(r){
             if (r){
                 $('#dg').datagrid('deleteRow', getRowIndex(target));
+                destroyServer(row);
             }
         });
     }
     function saverow(target){
         $('#dg').datagrid('endEdit', getRowIndex(target));
+        editServer();
     }
     function cancelrow(target){
         $('#dg').datagrid('cancelEdit', getRowIndex(target));
     }
+    $(function(){
+        doSearch()
+    });
+
+    $(function(){
+        var pager = $('#dg').datagrid('getPager');	// get the pager of datagrid
+        pager.pagination({
+            pageList: [10,50,100],
+            beforePageText: '第',//页数文本框前显示的汉字
+            afterPageText: '页 共 {pages} 页',
+            displayMsg:'当前显示 {from} - {to} 条记录 共 {total} 条记录',
+
+        });
+    });
+
+
 
     var url;
     function doSearch(){
@@ -150,20 +158,27 @@
             remark: $('#remark').val()
         });
     }
-    function newUser(){
-        $('#dlg').dialog('open').dialog('setTitle','New User');
+    function newServer(){
+        $('#dlg').dialog('open').dialog('setTitle','New Server');
         $('#fm').form('clear');
         url = '/add';
     }
-    function editUser(){
+    function editServer(){
         var row = $('#dg').datagrid('getSelected');
-        if (row){
-            $('#dlg').dialog('open').dialog('setTitle','Edit User');
-            $('#fm').form('load',row);
-            url = 'update_user.php?id='+row.id;
-        }
+        console.log(row);
+        $.post('/update',{id:row.id,ip:row.ip,servername:row.servername,port:row.port,remark:row.remark},function(result){
+            if (result.success){
+                $('#dg').datagrid('reload');	// reload the Server data
+            } else {
+                $.messager.show({	// show error message
+                    title: 'Error',
+                    msg: result.errorMsg
+                });
+            }
+        },'json');
+
     }
-    function saveUser(){
+    function saveServer(){
         $('#fm').form('submit',{
             url: '/add',
             onSubmit: function(){
@@ -178,19 +193,16 @@
                     });
                 } else {
                     $('#dlg').dialog('close');		// close the dialog
-                    $('#dg').datagrid('reload');	// reload the user data
+                    $('#dg').datagrid('reload');	// reload the Server data
                 }
             }
         });
     }
-    function destroyUser(){
-        var row = $('#dg').datagrid('getSelected');
-        if (row){
-            $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
-                if (r){
-                    $.post('destroy_user.php',{id:row.id},function(result){
+    function destroyServer(row){
+
+        $.post('/delete',{id:row.id},function(result){
                         if (result.success){
-                            $('#dg').datagrid('reload');	// reload the user data
+                            $('#dg').datagrid('reload');	// reload the Server data
                         } else {
                             $.messager.show({	// show error message
                                 title: 'Error',
@@ -199,9 +211,7 @@
                         }
                     },'json');
                 }
-            });
-        }
-    }
+
 </script>
 <style type="text/css">
     #fm{
