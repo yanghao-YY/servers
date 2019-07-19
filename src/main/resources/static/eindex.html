@@ -116,8 +116,7 @@
         $('#dg').datagrid('beginEdit', getRowIndex(target));
     }
     function deleterow(target){
-        var row = $('#dg').datagrid('getData').rows[$(target).rowIndex];
-        console.log(row);
+        var row = $('#dg').datagrid('getData').rows[getRowIndex(target)];
         $.messager.confirm('确认','确认要移除该应用的详情吗?',function(r){
             if (r){
                 $('#dg').datagrid('deleteRow', getRowIndex(target));
@@ -126,8 +125,9 @@
         });
     }
     function saverow(target){
+        var row = $('#dg').datagrid('getData').rows[getRowIndex(target)];
         $('#dg').datagrid('endEdit', getRowIndex(target));
-        editServer();
+        editServer(row);
     }
     function cancelrow(target){
         $('#dg').datagrid('cancelEdit', getRowIndex(target));
@@ -163,19 +163,9 @@
         $('#fm').form('clear');
         url = '/add';
     }
-    function editServer(){
-        var row = $('#dg').datagrid('getSelected');
-        console.log(row);
-        $.post('/update',{id:row.id,ip:row.ip,servername:row.servername,port:row.port,remark:row.remark},function(result){
-            if (result.success){
-                $('#dg').datagrid('reload');	// reload the Server data
-            } else {
-                $.messager.show({	// show error message
-                    title: 'Error',
-                    msg: result.errorMsg
-                });
-            }
-        },'json');
+    function editServer(row){
+
+        $.post('/update',{id:row.id,ip:row.ip,servername:row.servername,port:row.port,remark:row.remark},'json');
 
     }
     function saveServer(){
@@ -185,31 +175,22 @@
                 return $(this).form('validate');
             },
             success: function(result){
-                var result = eval('('+result+')');
-                if (result.errorMsg){
-                    $.messager.show({
-                        title: 'Error',
-                        msg: result.errorMsg
-                    });
-                } else {
-                    $('#dlg').dialog('close');		// close the dialog
-                    $('#dg').datagrid('reload');	// reload the Server data
-                }
+                    var result = eval('('+result+')');
+                    if (result.errorMsg){
+                        $.messager.show({
+                            title: 'Error',
+                            msg: result.errorMsg
+                        });
+                    } else {
+                        $('#dlg').dialog('close');		// close the dialog
+                        $('#dg').datagrid('reload');	// reload the Server data
+                    }
             }
         });
     }
     function destroyServer(row){
 
-        $.post('/delete',{id:row.id},function(result){
-                        if (result.success){
-                            $('#dg').datagrid('reload');	// reload the Server data
-                        } else {
-                            $.messager.show({	// show error message
-                                title: 'Error',
-                                msg: result.errorMsg
-                            });
-                        }
-                    },'json');
+        $.post('/delete',{id:row.id},'json');
                 }
 
 </script>
